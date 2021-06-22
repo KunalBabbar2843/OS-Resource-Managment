@@ -168,7 +168,7 @@ class DemandPaging{
 
 let demand_paging=new DemandPaging();
 
-let page_list=[7,0,1,2,0,3,0,4,2,3,0,3,2,1,2,0,1,7,0,1];
+let page_list=[1,2,3,4,1,2,5,1,2,3,4,5];
 
 let frame_size=4;
 
