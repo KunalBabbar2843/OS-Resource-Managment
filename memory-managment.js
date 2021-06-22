@@ -65,6 +65,7 @@ class DemandPaging{
         let page_faults=0;
         let frame_list=[];
         let lru_counter=[];
+        let count=0;
         for(let page of page_list)
         {
             if(!frame_list.includes(page))
@@ -72,7 +73,7 @@ class DemandPaging{
                 if(frame_list.length<frame_size)
                 {
                     frame_list.push(page);
-                    lru_counter.push(0);
+                    lru_counter.push(count++);
                     this.printReplacement(frame_list,frame_list[0],page);
                 }
                 else
@@ -86,7 +87,7 @@ class DemandPaging{
                         }
                     }
                     this.printReplacement(frame_list,frame_list[lru_idx],page);
-                    lru_counter[lru_idx]=0;
+                    lru_counter[lru_idx]=count++;
                     frame_list[lru_idx]=page;
                 }
                 page_faults+=1;
@@ -95,8 +96,8 @@ class DemandPaging{
             {
                 for(let page_id in frame_list)
                 {
-                    if(frame_size[page_id]==page){
-                        lru_counter[page_id]+=1;
+                    if(frame_list[page_id]===page){
+                        lru_counter[page_id]=count++;
                     }
                 }
                 this.printReplacement(frame_list,"not calculated",page,false);
