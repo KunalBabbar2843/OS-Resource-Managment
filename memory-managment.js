@@ -64,7 +64,7 @@ class DemandPaging{
             return page_list.length;
         let page_faults=0;
         let frame_list=[];
-        let lru_page=page_list[0];
+        let lru_counter=[];
         for(let page of page_list)
         {
             if(!frame_list.includes(page))
@@ -72,27 +72,35 @@ class DemandPaging{
                 if(frame_list.length<frame_size)
                 {
                     frame_list.push(page);
-                    this.printReplacement(frame_list,lru_page,page);
+                    lru_counter.push(0);
+                    this.printReplacement(frame_list,frame_list[0],page);
                 }
                 else
                 {
-                    this.printReplacement(frame_list,lru_page,page);
-                    frame_list=frame_list.filter((present_page)=>{ //remove the least recently used page and add new page
-                        return present_page!=lru_page;
-                    });
-                    frame_list.push(page);
+                    let lru_idx=0;
+                    for(let count_idx in lru_counter)
+                    {
+                        if(lru_counter[lru_idx]>lru_counter[count_idx])
+                        {
+                            lru_idx=count_idx;
+                        }
+                    }
+                    this.printReplacement(frame_list,frame_list[lru_idx],page);
+                    lru_counter[lru_idx]=0;
+                    frame_list[lru_idx]=page;
                 }
                 page_faults+=1;
             }
             else
             {
-                this.printReplacement(frame_list,lru_page,page,false);
-                frame_list=frame_list.filter((present_page)=>{ //remove the frame from it's current position and add it to end
-                    return present_page!=page;
-                })
-                frame_list.push(page);
+                for(let page_id in frame_list)
+                {
+                    if(frame_size[page_id]==page){
+                        lru_counter[page_id]+=1;
+                    }
+                }
+                this.printReplacement(frame_list,"not calculated",page,false);
             }
-            lru_page=frame_list[0];
         }
         return page_faults;
     }
