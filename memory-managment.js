@@ -156,13 +156,13 @@ class DemandPaging{
         let page_faults;
         console.log("<--FIRST COME FIRST SERVER-->");
         page_faults=this.firstComeFirstOutReplacement(page_list,frame_size);
-        console.log("MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
         console.log("<--LEAST RECENTLY USED-->");
         page_faults=this.leastRecentlyUsedReplacement(page_list,frame_size);
-        console.log("MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
         console.log("<--OPTIMAL REPLACEMENT-->");
         page_faults=this.optimalReplacement(page_list,frame_size);
-        console.log("MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
     }
 }
 
@@ -170,6 +170,6 @@ let demand_paging=new DemandPaging();
 
 let page_list=[1,2,3,4,1,2,5,1,2,3,4,5];
 
-let frame_size=4;
+let frame_size=3;
 
 demand_paging.showAllPagingAlgo(page_list,frame_size);
