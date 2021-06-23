@@ -26,8 +26,8 @@ class DiskScheduling {
     }
     console.log("MOVEMENT:" + movement);
   }
-  Scan(request, head, end, dir = 1) {
-    let movement = 0;
+  Scan(request, head, end) {
+    let movement = 0,temp=head;
     request.sort(function (a, b) {
       return a - b;
     });
@@ -36,40 +36,41 @@ class DiskScheduling {
     for (m in request) {
       if (request[m] >= head) break;
     }
-    if (dir == -1) {
-      for (let i = m - 1; i >= 0; --i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-      movement += head;
-      console.log("FROM:" + head + " TO:0");
-      head = 0;
-      for (let i = m; i < request.length; ++i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
+    console.log("<--LEFT-->");
+    for (let i = m - 1; i >= 0; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
     }
-    else{
-        for (let i = m; i < request.length; ++i) {
-            movement += Math.abs(head - request[i]);
-            console.log("FROM:" + head + " TO:" + request[i]);
-            head = request[i];
-        }
-        movement += end-head;
-        console.log("FROM:" + head + " TO:"+end);
-        head = end;
-        for (let i = m - 1; i >= 0; --i) {
-            movement += Math.abs(head - request[i]);
-            console.log("FROM:" + head + " TO:" + request[i]);
-            head = request[i];
-        }
+    movement += head;
+    console.log("FROM:" + head + " TO:0");
+    head = 0;
+    for (let i = m; i < request.length; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    console.log("MOVEMENT:" + movement);
+    console.log("<--RIGHT-->");
+    head=temp;
+    movement = 0;
+    for (let i = m; i < request.length; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    movement += end - head;
+    console.log("FROM:" + head + " TO:" + end);
+    head = end;
+    for (let i = m - 1; i >= 0; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
     }
     console.log("MOVEMENT:" + movement);
   }
-  Cscan(request, head, end, dir = 1) {
-    let movement = 0;
+  Cscan(request, head, end) {
+    let movement = 0,temp=head;
     request.sort(function (a, b) {
       return a - b;
     });
@@ -78,44 +79,47 @@ class DiskScheduling {
     for (m in request) {
       if (request[m] >= head) break;
     }
-    if (dir == -1) {
-      for (let i = m - 1; i >= 0; --i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-      movement += head;
-      console.log("FROM:" + head + " TO:0");
-      head = 0;
-      console.log("FROM:" + head + " TO:"+end);
-      head=end;
-      for (let i = request.length-1; i >= m; --i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
+    console.log("<--LEFT-->");
+    for (let i = m - 1; i >= 0; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
     }
-    else{
-        for (let i = m; i < request.length; ++i) {
-            movement += Math.abs(head - request[i]);
-            console.log("FROM:" + head + " TO:" + request[i]);
-            head = request[i];
-        }
-        movement += end-head;
-        console.log("FROM:" + head + " TO:"+end);
-        head = end;
-        console.log("FROM:" + head + " TO:0");
-        head=0;
-        for (let i = 0; i <m; ++i) {
-            movement += Math.abs(head - request[i]);
-            console.log("FROM:" + head + " TO:" + request[i]);
-            head = request[i];
-        }
+    movement += head;
+    console.log("FROM:" + head + " TO:0");
+    head = 0;
+    movement+=end;
+    console.log("FROM:" + head + " TO:" + end);
+    head = end;
+    for (let i = request.length - 1; i >= m; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    console.log("MOVEMENT:" + movement);
+    console.log("<--RIGHT-->");
+    head=temp;
+    movement = 0;
+    for (let i = m; i < request.length; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    movement += end - head;
+    console.log("FROM:" + head + " TO:" + end);
+    head = end;
+    movement+=end;
+    console.log("FROM:" + head + " TO:0");
+    head = 0;
+    for (let i = 0; i < m; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
     }
     console.log("MOVEMENT:" + movement);
   }
-  Look(request, head, end, dir = 1) {
-    let movement = 0;
+  Look(request, head, end) {
+    let movement = 0,temp=head;
     request.sort(function (a, b) {
       return a - b;
     });
@@ -124,33 +128,35 @@ class DiskScheduling {
     for (m in request) {
       if (request[m] >= head) break;
     }
-    if (dir == 1) {
-      for (let i = m; i < request.length; ++i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-      for (let i = m - 1; i >= 0; --i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-    } else {
-      for (let i = m - 1; i >= 0; --i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-      for (let i = m; i < request.length; ++i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
+    console.log("<--RIGHT-->");
+    for (let i = m; i < request.length; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    for (let i = m - 1; i >= 0; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    console.log("MOVEMENT:" + movement);
+    console.log("<--LEFT-->");
+    head=temp;
+    movement = 0;
+    for (let i = m - 1; i >= 0; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    for (let i = m; i < request.length; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
     }
     console.log("MOVEMENT:" + movement);
   }
-  Clook(request, head, end, dir = 1) {
-    let movement = 0;
+  Clook(request, head, end) {
+    let movement = 0,temp=head;
     request.sort(function (a, b) {
       return a - b;
     });
@@ -159,45 +165,45 @@ class DiskScheduling {
     for (m in request) {
       if (request[m] >= head) break;
     }
-    if (dir == 1) {
-      for (let i = m; i < request.length; ++i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-      movement-=Math.abs(head-request[0]);
-      for (let i = 0; i < m; ++i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-    } else {
-      for (let i = m - 1; i >= 0; --i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
-      movement-=Math.abs(head-request[request.length-1]);
-      for (let i = request.length-1; i >= m; --i) {
-        movement += Math.abs(head - request[i]);
-        console.log("FROM:" + head + " TO:" + request[i]);
-        head = request[i];
-      }
+    console.log("<--RIGHT-->");
+    for (let i = m; i < request.length; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    for (let i = 0; i < m; ++i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    console.log("MOVEMENT:" + movement);
+    movement = 0;
+    console.log("<--LEFT-->");
+    head=temp;
+    for (let i = m - 1; i >= 0; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
+    }
+    for (let i = request.length - 1; i >= m; --i) {
+      movement += Math.abs(head - request[i]);
+      console.log("FROM:" + head + " TO:" + request[i]);
+      head = request[i];
     }
     console.log("MOVEMENT:" + movement);
   }
-  ShowAllDiskAlgo(request,head,end,dir)
-  {
-      this.firstComeFirstServe(request,head);
-      this.shortestSeekTime(request,head);
-    //   this.Scan(request,head,end,dir);
-    //   this.Look(request,head,end,dir);
-    //   this.Cscan(request,head,end,dir);
-    //   this.Clook(request,head,end,dir);
+  ShowAllDiskAlgo(request, head, end, dir) {
+    this.firstComeFirstServe([...request], head);
+    this.shortestSeekTime([...request], head);
+    this.Scan([...request], head, end, dir);
+    this.Look([...request], head, end, dir);
+    this.Cscan([...request], head, end, dir);
+    this.Clook([...request], head, end, dir);
   }
 }
 
 let disk = new DiskScheduling();
-let request = [98, 183,37,122,14,124,65,67];
-let head = 98,end=199;
-disk.ShowAllDiskAlgo(request,head,end,1);
+let request = [180,20,190,65,160,80,175,95];
+let head = 82,
+    end = 199;
+disk.ShowAllDiskAlgo(request, head, end);
