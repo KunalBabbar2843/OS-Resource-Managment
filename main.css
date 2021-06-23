@@ -10,3 +10,17 @@ header{
     justify-content: center;
     margin-top:1em;
 }
+#select-menu {
+    display: flex;
+    flex-direction: row;
+    margin: 1rem 0.5rem;
+}
+#select-menu select{
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+#select-menu select option{
+    display: block;
+    margin: 0 auto;
+}
