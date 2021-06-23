@@ -111,7 +111,7 @@ class DemandPaging{
             return page_list.length;
         let page_faults=0;
         let frame_list=[];
-        let last_page_id;
+        let last_page_id=-1;
         let next_page_id_list=[];
         let curr_idx=0;
         for(let page of page_list)
@@ -126,8 +126,15 @@ class DemandPaging{
                     let next_page_id=page_list.indexOf(page,curr_idx+1);
                     if(next_page_id==-1) next_page_id=page_list.length+1;
                     next_page_id_list.push(next_page_id);
+                    if(next_page_id>last_page_id) last_page_id=curr_idx;
                 }
                 else{
+                    //calulating the id of page which is to be used last 
+                    for(let id in next_page_id_list)
+                    {
+                        if(next_page_id_list[id]>next_page_id_list[last_page_id])
+                            last_page_id=id;
+                    }
                     this.printReplacement(frame_list,frame_list[last_page_id],page);
                     for(let page_id in frame_list)
                     {
@@ -152,13 +159,6 @@ class DemandPaging{
                 if(next_page_id==-1) 
                     next_page_id=page_list.length+1;
                 next_page_id_list[page_id]=next_page_id;
-            }
-            //calulating the id of page which is to be used last 
-            last_page_id=0;
-            for(let id in next_page_id_list)
-            {
-                if(next_page_id_list[id]>next_page_id_list[last_page_id])
-                    last_page_id=id;
             }
             curr_idx+=1;
         }
