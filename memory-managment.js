@@ -35,8 +35,8 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
-                    frame_list.push(page);
                     this.printReplacement(frame_list,frame_list[first_come_page],page);
+                    frame_list.push(page);
                 }
                 else
                 {
@@ -72,9 +72,9 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
+                    this.printReplacement(frame_list,frame_list[0],page);
                     frame_list.push(page);
                     lru_counter.push(count++);
-                    this.printReplacement(frame_list,frame_list[0],page);
                 }
                 else
                 {
@@ -111,41 +111,54 @@ class DemandPaging{
             return page_list.length;
         let page_faults=0;
         let frame_list=[];
-        let not_used_page=page_list[0];
+        let last_page_id;
+        let next_page_id_list=[];
         let curr_idx=0;
         for(let page of page_list)
         {
-            if(!frame_list.includes(page))
+            let page_id=frame_list.indexOf(page);
+            if(page_id<0)
             {
                 if(frame_list.length<frame_size)
                 {
+                    this.printReplacement(frame_list,frame_list[last_page_id],page);
                     frame_list.push(page);
-                    this.printReplacement(frame_list,not_used_page,page);
+                    let next_page_id=page_list.indexOf(page,curr_idx+1);
+                    if(next_page_id==-1) next_page_id=page_list.length+1;
+                    next_page_id_list.push(next_page_id);
                 }
                 else{
-                    this.printReplacement(frame_list,not_used_page,page);
-                    frame_list=frame_list.filter((present_page)=>{
-                        return present_page!=not_used_page;
-                    });
-                    frame_list.push(page);
-                }
-                let max_last_idx=-1;
-                for(let present_page of frame_list){
-                    let first_idx=page_list.indexOf(present_page,curr_idx+1);
-                    if(first_idx==-1)
+                    this.printReplacement(frame_list,frame_list[last_page_id],page);
+                    for(let page_id in frame_list)
                     {
-                        not_used_page=present_page;
-                        break;
-                    }
-                    else if(first_idx>max_last_idx){
-                        not_used_page=present_page;
-                        max_last_idx=first_idx;
+                        if(frame_list[page_id]===frame_list[last_page_id])
+                        {
+                            frame_list[page_id]=page;
+                            let next_page_id=page_list.indexOf(page,curr_idx+1);
+                            if(next_page_id==-1) 
+                                next_page_id=page_list.length+1;
+                            next_page_id_list[page_id]=next_page_id;
+                            break;
+                        }
                     }
                 }
                 page_faults+=1;
             }
-            else{
-                this.printReplacement(frame_list,not_used_page,page,false);
+            else
+            {
+                this.printReplacement(frame_list,frame_list[last_page_id],page,false);
+                //updating the next id of the page 
+                let next_page_id=page_list.indexOf(page,curr_idx+1);
+                if(next_page_id==-1) 
+                    next_page_id=page_list.length+1;
+                next_page_id_list[page_id]=next_page_id;
+            }
+            //calulating the id of page which is to be used last 
+            last_page_id=0;
+            for(let id in next_page_id_list)
+            {
+                if(next_page_id_list[id]>next_page_id_list[last_page_id])
+                    last_page_id=id;
             }
             curr_idx+=1;
         }
@@ -156,13 +169,13 @@ class DemandPaging{
         let page_faults;
         console.log("<--FIRST COME FIRST SERVER-->");
         page_faults=this.firstComeFirstOutReplacement(page_list,frame_size);
-        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  HIT RATIO:"+(1-(page_faults*1.0/page_list.length)));
         console.log("<--LEAST RECENTLY USED-->");
         page_faults=this.leastRecentlyUsedReplacement(page_list,frame_size);
-        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  HIT RATIO:"+(1-(page_faults*1.0/page_list.length)));
         console.log("<--OPTIMAL REPLACEMENT-->");
         page_faults=this.optimalReplacement(page_list,frame_size);
-        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  MISS RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  HIT RATIO:"+(1-(page_faults*1.0/page_list.length)));
     }
 }
 
@@ -170,6 +183,6 @@ let demand_paging=new DemandPaging();
 
 let page_list=[1,2,3,4,1,2,5,1,2,3,4,5];
 
-let frame_size=3;
+let frame_size=4;
 
 demand_paging.showAllPagingAlgo(page_list,frame_size);
