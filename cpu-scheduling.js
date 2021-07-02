@@ -262,8 +262,6 @@ class CpuScheduling{
             if(a.arrival==b.arrival) return -1*priority_cmp(a,b);
             return 1;
         });
-        console.table(process_list);
-        return;
         let time_elapsed=0;
         let top_process=process_list[0];
         while(top_process)
@@ -313,15 +311,19 @@ class CpuScheduling{
         }
         this.calculateFinalState(process_list);
     }
+    showAllSchedulingAlgorithm(process_ary,time_quantum,priority_cmp)
+    {
+        cpu.firstComeFirstServe(process_ary);
+        cpu.shortestJobFirst(process_ary);
+        cpu.shortestRemainingTimeFirst(process_ary);
+        cpu.roundRobin(process_ary,time_quantum);
+        cpu.priorityNonPreemptive(process_ary,priority_compare);
+        cpu.priorityPreemptive(process_ary,priority_compare);
+    }
 }
 let process_ary=[[0,5,10],[1,4,20],[2,2,30],[4,1,40]];
 let cpu=new CpuScheduling();
-cpu.firstComeFirstServe(process_ary);
-cpu.shortestJobFirst(process_ary);
-cpu.shortestRemainingTimeFirst(process_ary);
 let time_quantum=2;
-cpu.roundRobin(process_ary,time_quantum);
 let priority_compare=(a,b)=>a.priority>b.priority?1:a.priority==b.priority?0:-1
-cpu.priorityNonPreemptive(process_ary,priority_compare);
-cpu.priorityPreemptive(process_ary,priority_compare);
+cpu.showAllSchedulingAlgorithm(process_ary,time_quantum,priority_compare);
 
