@@ -203,7 +203,7 @@ class DiskScheduling {
 }
 
 let disk = new DiskScheduling();
-let request = [180,20,190,65,160,80,175,95];
-let head = 82,
+let request = [10, 22, 20, 2, 40,6,38];
+let head = 20,
     end = 199;
 disk.ShowAllDiskAlgo(request, head, end);

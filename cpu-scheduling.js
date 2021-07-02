@@ -139,12 +139,7 @@ class CpuScheduling{
                 }
             }
             let old_time=time_elapsed;
-            if(next_arrived)
-            {
-                shortest_job.remaining-=(next_arrived.arrival-time_elapsed);
-                time_elapsed=next_arrived.arrival;
-            }
-            else
+            if(!next_arrived)
             {
                 time_elapsed+=shortest_job.remaining;
                 shortest_job.remaining=0;
@@ -167,6 +162,11 @@ class CpuScheduling{
                         break;
                     }
                 }
+            }
+            else
+            {
+                shortest_job.remaining-=(next_arrived.arrival-time_elapsed);
+                time_elapsed=next_arrived.arrival;
             }
             let new_time=time_elapsed;
             this.timingInfo(old_time,new_time,shortest_job.id);
@@ -217,12 +217,12 @@ class CpuScheduling{
         }
         this.calculateFinalState(process_list);
     }
-    priorityNonPreemptive(process_ary)
+    priorityNonPreemptive(process_ary,priority_cmp)
     {
         console.log("<--PRIORITY NON PRE-EMPTIVE SCHEDULING-->");
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
-            if(a.arrival==b.arrival) return b.priority-a.priority;
+            if(a.arrival==b.arrival) return -1*priority_cmp(a,b);
             return 1;
         });
         let time_elapsed=0;
@@ -237,7 +237,7 @@ class CpuScheduling{
                 if(process.arrival<=time_elapsed+process.remaining)
                 {
                     if(!next_arrived) next_arrived=process;
-                    else if(next_arrived.priority>process.priority) next_arrived=process;
+                    else if(priority_cmp(process,next_arrived)>0) next_arrived=process;
                 }
                 else{
                     next_arrived=process;
@@ -254,21 +254,74 @@ class CpuScheduling{
         }
         this.calculateFinalState(process_list);
     }
-    priorityPreemptive(process_ary)
+    priorityPreemptive(process_ary,priority_cmp)
     {
         console.log("<--PRIORITY PREEMPTIVE SCHEDULING-->");
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
-            if(a.arrival==b.arrival) return b.priority-a.priority;
+            if(a.arrival==b.arrival) return -1*priority_cmp(a,b);
             return 1;
         });
+        console.table(process_list);
+        return;
         let time_elapsed=0;
+        let top_process=process_list[0];
+        while(top_process)
+        {
+            time_elapsed=this.adjustTimmingAndResponse(top_process,time_elapsed);
+            let next_arrived=null;
+            for(let process of process_list)
+            {
+                if(process.arrival<=time_elapsed||process.arrival>=time_elapsed+top_process.remaining) continue;
+                if(priority_cmp(process,top_process)>=0)
+                {
+                    next_arrived=process;
+                    break;
+                }
+            }
+            let old_time=time_elapsed;
+            if(!next_arrived)
+            {
+                time_elapsed+=top_process.remaining;
+                top_process.remaining=0;
+                top_process.finish=time_elapsed;
+                for(let process of process_list)
+                {
+                    if(process.finish) continue;
+                    if(process.arrival<=time_elapsed)
+                    {
+                        if(!next_arrived)
+                            next_arrived=process;
+                        else if(priority_cmp(process,next_arrived)>0)
+                            next_arrived=process;
+                    }
+                    else if(!next_arrived)
+                    {
+                        next_arrived=process;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                top_process.remaining-=(next_arrived.arrival-time_elapsed);
+                time_elapsed=next_arrived.arrival;
+            }
+            let new_time=time_elapsed;
+            this.timingInfo(old_time,new_time,top_process.id);
+            top_process=next_arrived;
+        }
+        this.calculateFinalState(process_list);
     }
 }
-let process_ary=[[0,10,20],[1,6,13],[3,2,8],[5,4,18]];
+let process_ary=[[0,5,10],[1,4,20],[2,2,30],[4,1,40]];
 let cpu=new CpuScheduling();
 cpu.firstComeFirstServe(process_ary);
 cpu.shortestJobFirst(process_ary);
 cpu.shortestRemainingTimeFirst(process_ary);
-cpu.roundRobin(process_ary,2);
-cpu.priorityNonPreemptive(process_ary);
+let time_quantum=2;
+cpu.roundRobin(process_ary,time_quantum);
+let priority_compare=(a,b)=>a.priority>b.priority?1:a.priority==b.priority?0:-1
+cpu.priorityNonPreemptive(process_ary,priority_compare);
+cpu.priorityPreemptive(process_ary,priority_compare);
+
