@@ -37,6 +37,16 @@ class CpuScheduling{
     {
         console.log(old_time+" to "+new_time+" process:"+process_id);
     }
+    adjustTimmingAndResponse(process,time_elapsed){
+        if(time_elapsed<process.arrival)
+        {
+            this.timingInfo(time_elapsed,process.arrival,"cpu idle");
+            time_elapsed=process.arrival;
+        }
+        if(process.response==null)
+            process.response=time_elapsed-process.arrival;
+        return time_elapsed;
+    }
     calculateFinalState(process_list){
         process_list.sort((a,b)=>a.id-b.id);
         let avg_turnaround=0,avg_wait=0,avg_response=0,length=process_list.length;
@@ -62,21 +72,13 @@ class CpuScheduling{
         });
         let time_elapsed=0;
         for(let process of process_list){
-            if(time_elapsed<process.arrival)
-            {
-                this.timingInfo(time_elapsed,process.arrival,"cpu idle");
-                time_elapsed=process.arrival;
-            }
-            if(!process.response)
-            {
-                process.response=time_elapsed-process.arrival;
-            }
+            time_elapsed=this.adjustTimmingAndResponse(process,time_elapsed);
             let old_time=time_elapsed;
             time_elapsed+=process.remaining;
             let new_time=time_elapsed;
+            this.timingInfo(old_time,new_time,process.id);
             process.remaining=0;
             process.finish=time_elapsed;
-            this.timingInfo(old_time,new_time,process.id);
         }
         this.calculateFinalState(process_list);
     }
@@ -91,19 +93,13 @@ class CpuScheduling{
         let time_elapsed=0;
         let shortest_job=process_list[0];
         while(shortest_job){
-            if(time_elapsed<shortest_job.arrival)
-            {
-                this.timingInfo(time_elapsed,shortest_job.arrival,"cpu idle");
-                time_elapsed=shortest_job.arrival;
-            }
-            if(!shortest_job.response)
-                shortest_job.response=time_elapsed-shortest_job.arrival;
+            time_elapsed=this.adjustTimmingAndResponse(shortest_job,time_elapsed);
             let old_time=time_elapsed;
             time_elapsed+=shortest_job.remaining;
             let new_time=time_elapsed;
+            this.timingInfo(old_time,new_time,shortest_job.id);
             shortest_job.remaining=0;
             shortest_job.finish=time_elapsed;
-            this.timingInfo(old_time,new_time,shortest_job.id);
             shortest_job=null;
             for(let process of process_list){
                 if(!process.finish)
@@ -130,17 +126,11 @@ class CpuScheduling{
         let shortest_job=process_list[0];
         shortest_job.response=0;
         while(shortest_job){
-            if(time_elapsed<shortest_job.arrival)
-            {
-                this.timingInfo(time_elapsed,shortest_job.arrival,"cpu idle");
-                time_elapsed=shortest_job.arrival;
-            }
-            if(shortest_job.response==null) 
-                shortest_job.response=time_elapsed-shortest_job.arrival;          
+            time_elapsed=this.adjustTimmingAndResponse(shortest_job,time_elapsed);          
             let next_arrived=null;
             for(let process of process_list)
             {
-                if(process.arrival<=time_elapsed||process.arrival>time_elapsed+shortest_job.remaining) continue;
+                if(process.arrival<=time_elapsed||process.arrival>=time_elapsed+shortest_job.remaining) continue;
                 let time_before_arrival=process.arrival-time_elapsed;
                 if(shortest_job.remaining-time_before_arrival>=process.remaining)
                 {
@@ -197,15 +187,9 @@ class CpuScheduling{
         while(ready_queue.length)
         {
             top_process=ready_queue.shift();
-            if(time_elapsed<top_process.arrival)
-            {
-                this.timingInfo(time_elapsed,top_process.arrival,"cpu idle");
-                time_elapsed=top_process.arrival;
-            }
-            if(top_process.response==null)
-                top_process.response=time_elapsed-top_process.arrival;
+            time_elapsed=this.adjustTimmingAndResponse(top_process,time_elapsed);
             let run_time=top_process.remaining>time_quantum?time_quantum:top_process.remaining;
-            let not_arrived=null;
+            let next_arrived=null;
             for(let process of process_list)
             {
                 if(process.arrival<=time_elapsed||process.id==top_process.id) continue;
@@ -215,7 +199,7 @@ class CpuScheduling{
                 }
                 else if(!ready_queue.length)
                 {
-                    not_arrived=process;
+                    next_arrived=process;
                     break;
                 }
             }
@@ -228,8 +212,8 @@ class CpuScheduling{
                 top_process.finish=time_elapsed;
             else
                 ready_queue.push(top_process);
-            if(!ready_queue.length&&not_arrived)
-                ready_queue.push(not_arrived);
+            if(!ready_queue.length&&next_arrived)
+                ready_queue.push(next_arrived);
         }
         this.calculateFinalState(process_list);
     }
@@ -245,13 +229,7 @@ class CpuScheduling{
         let top_process=process_list[0];
         while(top_process)
         {
-            if(time_elapsed<top_process.arrival)
-            {
-                this.timingInfo(time_elapsed,top_process.arrival,"cpu idle");
-                time_elapsed=top_process.arrival;
-            }
-            if(top_process.response==null)
-                top_process.response=time_elapsed-top_process.arrival;
+            time_elapsed=this.adjustTimmingAndResponse(top_process,time_elapsed);
             let next_arrived=null;
             for(let process of process_list)
             {
@@ -287,10 +265,10 @@ class CpuScheduling{
         let time_elapsed=0;
     }
 }
-let process_ary=[[0,10,20],[1,6,13],[3,8,8],[5,14,18]];
+let process_ary=[[0,10,20],[1,6,13],[3,2,8],[5,4,18]];
 let cpu=new CpuScheduling();
-// cpu.firstComeFirstServe(process_ary);
-// cpu.shortestJobFirst(process_ary);
-// cpu.shortestRemainingTimeFirst(process_ary);
-// cpu.roundRobin(process_ary,2);
+cpu.firstComeFirstServe(process_ary);
+cpu.shortestJobFirst(process_ary);
+cpu.shortestRemainingTimeFirst(process_ary);
+cpu.roundRobin(process_ary,2);
 cpu.priorityNonPreemptive(process_ary);
