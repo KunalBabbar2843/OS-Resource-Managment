@@ -33,38 +33,44 @@ class CpuScheduling{
         process_list.sort(sort_by);
         return process_list;
     }
-    timingInfo(old_time,new_time,process_id)
+    updateGanttChart(old_time,new_time,process_id,result)
     {
-        console.log(old_time+" to "+new_time+" process:"+process_id);
+        result.gantt_chart.push({
+            old_time,new_time,process_id
+        });
     }
-    adjustTimmingAndResponse(process,time_elapsed){
+    adjustTimingAndResponse(process,time_elapsed){
         if(time_elapsed<process.arrival)
         {
-            this.timingInfo(time_elapsed,process.arrival,"cpu idle");
+            this.updateGanttChart(time_elapsed,process.arrival,"cpu idle",result);
             time_elapsed=process.arrival;
         }
         if(process.response==null)
             process.response=time_elapsed-process.arrival;
         return time_elapsed;
     }
-    calculateFinalState(process_list){
+    calculateFinalState(process_list,result){
         process_list.sort((a,b)=>a.id-b.id);
-        let avg_turnaround=0,avg_wait=0,avg_response=0,length=process_list.length;
+        let length=process_list.length;
         for(let process of process_list)
         {
             process.turnaround=process.finish-process.arrival;
-            avg_turnaround+=(process.turnaround)/length;
+            result.avg_turnaround+=(process.turnaround)/length;
             process.wait=process.turnaround-process.burst;
-            avg_wait+=(process.wait)/length;
-            avg_response+=(process.response)/length;
+            result.avg_wait+=(process.wait)/length;
+            result.avg_response+=(process.response)/length;
         }
-        console.table(process_list);
-        console.log("average turnaround time:"+avg_turnaround);
-        console.log("average waiting time:"+avg_wait);
-        console.log("average response time:"+avg_response);
+        result.final_state=process_list;
     }
     firstComeFirstServe(process_ary){
-        console.log("<--FIRST COME FIRST SERVE SCHEDULING-->");
+        let result={
+            avg_wait:0,
+            avg_turnaround:0,
+            avg_response:0,
+            gantt_chart:[],
+            process_list:null
+        };
+       
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
             if(a.arrival==b.arrival) return a.id-b.id;
@@ -72,19 +78,27 @@ class CpuScheduling{
         });
         let time_elapsed=0;
         for(let process of process_list){
-            time_elapsed=this.adjustTimmingAndResponse(process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(process,time_elapsed);
             let old_time=time_elapsed;
             time_elapsed+=process.remaining;
             let new_time=time_elapsed;
-            this.timingInfo(old_time,new_time,process.id);
+            this.updateGanttChart(old_time,new_time,process.id,result);
             process.remaining=0;
             process.finish=time_elapsed;
         }
-        this.calculateFinalState(process_list);
+        this.calculateFinalState(process_list,result);
+        return result;
     }
     shortestJobFirst(process_ary)
     {
-        console.log("<--SHORTEST JOB FIRST SCHEDULING-->");
+        let result={
+            avg_wait:0,
+            avg_turnaround:0,
+            avg_response:0,
+            gantt_chart:[],
+            process_list:null
+        };
+        
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
             if(a.arrival==b.arrival) return a.burst-b.burst;
@@ -93,11 +107,11 @@ class CpuScheduling{
         let time_elapsed=0;
         let shortest_job=process_list[0];
         while(shortest_job){
-            time_elapsed=this.adjustTimmingAndResponse(shortest_job,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(shortest_job,time_elapsed);
             let old_time=time_elapsed;
             time_elapsed+=shortest_job.remaining;
             let new_time=time_elapsed;
-            this.timingInfo(old_time,new_time,shortest_job.id);
+            this.updateGanttChart(old_time,new_time,shortest_job.id,result);
             shortest_job.remaining=0;
             shortest_job.finish=time_elapsed;
             shortest_job=null;
@@ -113,10 +127,18 @@ class CpuScheduling{
                 }
             }
         }
-        this.calculateFinalState(process_list);
+        this.calculateFinalState(process_list,result);
+        return result;
     }
     shortestRemainingTimeFirst(process_ary){
-        console.log("<--SHORTEST REMAINING TIME FIRST SCHEDULING-->");
+        let result={
+            avg_wait:0,
+            avg_turnaround:0,
+            avg_response:0,
+            gantt_chart:[],
+            process_list:null
+        };
+        
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
             if(a.arrival==b.arrival) return a.burst-b.burst;
@@ -126,7 +148,7 @@ class CpuScheduling{
         let shortest_job=process_list[0];
         shortest_job.response=0;
         while(shortest_job){
-            time_elapsed=this.adjustTimmingAndResponse(shortest_job,time_elapsed);          
+            time_elapsed=this.adjustTimingAndResponse(shortest_job,time_elapsed);          
             let next_arrived=null;
             for(let process of process_list)
             {
@@ -169,13 +191,21 @@ class CpuScheduling{
                 time_elapsed=next_arrived.arrival;
             }
             let new_time=time_elapsed;
-            this.timingInfo(old_time,new_time,shortest_job.id);
+            this.updateGanttChart(old_time,new_time,shortest_job.id,result);
             shortest_job=next_arrived;
         }
-        this.calculateFinalState(process_list);
+        this.calculateFinalState(process_list,result);
+        return result;
     }
     roundRobin(process_ary,time_quantum){
-        console.log("<--ROUND ROBIN SCHEDULING-->");
+        let result={
+            avg_wait:0,
+            avg_turnaround:0,
+            avg_response:0,
+            gantt_chart:[],
+            process_list:null
+        };
+        
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
             if(a.arrival==b.arrival) return a.burst-b.burst;
@@ -187,7 +217,7 @@ class CpuScheduling{
         while(ready_queue.length)
         {
             top_process=ready_queue.shift();
-            time_elapsed=this.adjustTimmingAndResponse(top_process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed);
             let run_time=top_process.remaining>time_quantum?time_quantum:top_process.remaining;
             let next_arrived=null;
             for(let process of process_list)
@@ -206,7 +236,7 @@ class CpuScheduling{
             let old_time=time_elapsed;
             time_elapsed+=run_time;
             let new_time=time_elapsed;
-            this.timingInfo(old_time,new_time,top_process.id);
+            this.updateGanttChart(old_time,new_time,top_process.id,result);
             top_process.remaining-=run_time;
             if(top_process.remaining==0)
                 top_process.finish=time_elapsed;
@@ -215,11 +245,19 @@ class CpuScheduling{
             if(!ready_queue.length&&next_arrived)
                 ready_queue.push(next_arrived);
         }
-        this.calculateFinalState(process_list);
+        this.calculateFinalState(process_list,result);
+        return result;
     }
     priorityNonPreemptive(process_ary,priority_cmp)
     {
-        console.log("<--PRIORITY NON PRE-EMPTIVE SCHEDULING-->");
+        let result={
+            avg_wait:0,
+            avg_turnaround:0,
+            avg_response:0,
+            gantt_chart:[],
+            process_list:null
+        };
+        
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
             if(a.arrival==b.arrival) return -1*priority_cmp(a,b);
@@ -229,15 +267,17 @@ class CpuScheduling{
         let top_process=process_list[0];
         while(top_process)
         {
-            time_elapsed=this.adjustTimmingAndResponse(top_process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed);
             let next_arrived=null;
             for(let process of process_list)
             {
                 if(process.finish||process.id==top_process.id) continue;
-                if(process.arrival<=time_elapsed+process.remaining)
+                if(process.arrival<=time_elapsed+top_process.remaining)
                 {
-                    if(!next_arrived) next_arrived=process;
-                    else if(priority_cmp(process,next_arrived)>0) next_arrived=process;
+                    if(next_arrived==null) 
+                        next_arrived=process;
+                    else if(priority_cmp(process,next_arrived)>0) 
+                        next_arrived=process;
                 }
                 else{
                     next_arrived=process;
@@ -247,16 +287,23 @@ class CpuScheduling{
             let old_time=time_elapsed;
             time_elapsed+=top_process.remaining;
             let new_time=time_elapsed;
-            this.timingInfo(old_time,new_time,top_process.id);
+            this.updateGanttChart(old_time,new_time,top_process.id,result);
             top_process.remaining=0;
             top_process.finish=time_elapsed;
             top_process=next_arrived;
         }
-        this.calculateFinalState(process_list);
+        this.calculateFinalState(process_list,result);
+        return result;
     }
     priorityPreemptive(process_ary,priority_cmp)
     {
-        console.log("<--PRIORITY PREEMPTIVE SCHEDULING-->");
+        let result={
+            avg_wait:0,
+            avg_turnaround:0,
+            avg_response:0,
+            gantt_chart:[],
+            process_list:null
+        };
         let process_list=this.createProcessList(process_ary,(a,b)=>{
             if(a.arrival<b.arrival) return -1;
             if(a.arrival==b.arrival) return -1*priority_cmp(a,b);
@@ -266,7 +313,7 @@ class CpuScheduling{
         let top_process=process_list[0];
         while(top_process)
         {
-            time_elapsed=this.adjustTimmingAndResponse(top_process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed);
             let next_arrived=null;
             for(let process of process_list)
             {
@@ -306,24 +353,47 @@ class CpuScheduling{
                 time_elapsed=next_arrived.arrival;
             }
             let new_time=time_elapsed;
-            this.timingInfo(old_time,new_time,top_process.id);
+            this.updateGanttChart(old_time,new_time,top_process.id,result);
             top_process=next_arrived;
         }
-        this.calculateFinalState(process_list);
+        this.calculateFinalState(process_list,result);
+        return result;
+    }
+    showResult(result)
+    {
+        console.table(result.final_state);
+        for(let state of result.gantt_chart)
+            console.log(state.old_time+" to "+state.new_time+" process:"+state.process_id);
+        console.log("average turnaround time:"+result.avg_turnaround);
+        console.log("average waiting time:"+result.avg_wait);
+        console.log("average turnaround time:"+result.avg_response);
     }
     showAllSchedulingAlgorithm(process_ary,time_quantum,priority_cmp)
     {
-        cpu.firstComeFirstServe(process_ary);
-        cpu.shortestJobFirst(process_ary);
-        cpu.shortestRemainingTimeFirst(process_ary);
-        cpu.roundRobin(process_ary,time_quantum);
-        cpu.priorityNonPreemptive(process_ary,priority_compare);
-        cpu.priorityPreemptive(process_ary,priority_compare);
+        let result;
+        console.log("<--FIRST COME FIRST SERVE SCHEDULING-->");
+        result=cpu.firstComeFirstServe(process_ary);
+        this.showResult(result);
+        console.log("<--SHORTEST JOB FIRST SCHEDULING-->");
+        result=cpu.shortestJobFirst(process_ary);
+        this.showResult(result);
+        console.log("<--SHORTEST REMAINING TIME FIRST SCHEDULING-->");
+        result=cpu.shortestRemainingTimeFirst(process_ary);
+        this.showResult(result);
+        console.log("<--ROUND ROBIN SCHEDULING-->");
+        result=cpu.roundRobin(process_ary,time_quantum);
+        this.showResult(result);
+        console.log("<--PRIORITY NON PREEMPTIVE SCHEDULING-->");
+        result=cpu.priorityNonPreemptive(process_ary,priority_cmp);
+        this.showResult(result);
+        console.log("<--PRIORITY PREEMPTIVE SCHEDULING-->");
+        result=cpu.priorityPreemptive(process_ary,priority_cmp);
+        this.showResult(result);
     }
 }
 let process_ary=[[0,5,10],[1,4,20],[2,2,30],[4,1,40]];
 let cpu=new CpuScheduling();
 let time_quantum=2;
-let priority_compare=(a,b)=>a.priority>b.priority?1:a.priority==b.priority?0:-1
-cpu.showAllSchedulingAlgorithm(process_ary,time_quantum,priority_compare);
-
+let priority_greater=(a,b)=>a.priority>b.priority?1:a.priority==b.priority?0:-1;
+let priority_lesser=(a,b)=>a.priority>b.priority?-1:a.priority==b.priority?0:1;
+cpu.showAllSchedulingAlgorithm(process_ary,time_quantum,priority_greater);

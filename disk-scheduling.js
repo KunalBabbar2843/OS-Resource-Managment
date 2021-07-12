@@ -229,5 +229,5 @@ class DiskScheduling {
 let disk = new DiskScheduling();
 let request = [40, 124, 22, 86, 132, 60, 185, 17];
 let head = 50,
-  end = 199;
-disk.ShowAllDiskAlgo(request, head, end);
+  end = 200;
+disk.ShowAllDiskAlgo(request, head, end-1);

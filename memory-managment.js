@@ -1,32 +1,20 @@
 class DemandPaging{
-    constructor(){
-    }
-    printReplacement(frame_list,replacement_page,new_page,to_replace=true){
-        let str=new_page+"|";
-        if(!to_replace)
-        {
-            console.log(str+"|");
-            return;
-        }
-        for(let page of frame_list)
-        {
-            if(page===replacement_page)
-            {
-                str+="->"+replacement_page;
-            }
-            else
-            {
-                str+="  "+page;
-            }
-        }
-        str+="|";
-        console.log(str);
+    constructor(){}
+    updateReplacement(frame_list,replacement_page,new_page,result,to_replace=true)
+    {
+        result.page_faults.push({
+            new_page,
+            frame_list:[...frame_list],
+            replacement_page,
+            to_replace
+        });
     }
     firstComeFirstOutReplacement(page_list,frame_size)
     {
-        if(page_list.length<=frame_size)
-            return page_list.length;
-        let page_faults=0;
+        let result={
+            page_faults:[],
+            fault_count:0
+        };
         let frame_list=[];
         let first_come_page=0;
         for(let page of page_list)
@@ -35,12 +23,12 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
-                    this.printReplacement(frame_list,frame_list[first_come_page],page);
+                    this.updateReplacement(frame_list,frame_list[first_come_page],page,result,false);
                     frame_list.push(page);
                 }
                 else
                 {
-                    this.printReplacement(frame_list,frame_list[first_come_page],page);
+                    this.updateReplacement(frame_list,frame_list[first_come_page],page,result,true);
                     for(let page_idx in frame_list)
                     {
                         if(frame_list[first_come_page]===frame_list[page_idx])
@@ -50,19 +38,20 @@ class DemandPaging{
                     }
                     first_come_page=(first_come_page+1)%frame_size;
                 }
-                page_faults+=1;
+                result.fault_count+=1;
             }
             else{
-                this.printReplacement(frame_list,first_come_page,page,false);
+                this.updateReplacement(frame_list,first_come_page,page,result,false);
             }
         }
-        return page_faults;
+        return result;
     }
     leastRecentlyUsedReplacement(page_list,frame_size)
     {
-        if(page_list.length<=frame_size)
-            return page_list.length;
-        let page_faults=0;
+        let result={
+            page_faults:[],
+            fault_count:0
+        };
         let frame_list=[];
         let lru_counter=[];
         let count=0;
@@ -72,7 +61,7 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
-                    this.printReplacement(frame_list,frame_list[0],page);
+                    this.updateReplacement(frame_list,frame_list[0],page,result,false);
                     frame_list.push(page);
                     lru_counter.push(count++);
                 }
@@ -86,11 +75,11 @@ class DemandPaging{
                             lru_idx=count_idx;
                         }
                     }
-                    this.printReplacement(frame_list,frame_list[lru_idx],page);
+                    this.updateReplacement(frame_list,frame_list[lru_idx],page,result);
                     lru_counter[lru_idx]=count++;
                     frame_list[lru_idx]=page;
                 }
-                page_faults+=1;
+                result.fault_count+=1;
             }
             else
             {
@@ -100,16 +89,17 @@ class DemandPaging{
                         lru_counter[page_id]=count++;
                     }
                 }
-                this.printReplacement(frame_list,"not calculated",page,false);
+                this.updateReplacement(frame_list,"not calculated",page,result,false);
             }
         }
-        return page_faults;
+        return result;
     }
     optimalReplacement(page_list,frame_size)
     {
-        if(page_list.length<frame_size)
-            return page_list.length;
-        let page_faults=0;
+        let result={
+            page_faults:[],
+            fault_count:0
+        };
         let frame_list=[];
         let last_page_id=-1;
         let next_page_id_list=[];
@@ -121,7 +111,7 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
-                    this.printReplacement(frame_list,frame_list[last_page_id],page);
+                    this.updateReplacement(frame_list,frame_list[last_page_id],page,result,false);
                     frame_list.push(page);
                     let next_page_id=page_list.indexOf(page,curr_idx+1);
                     if(next_page_id==-1) next_page_id=page_list.length+1;
@@ -135,7 +125,7 @@ class DemandPaging{
                         if(next_page_id_list[id]>next_page_id_list[last_page_id])
                             last_page_id=id;
                     }
-                    this.printReplacement(frame_list,frame_list[last_page_id],page);
+                    this.updateReplacement(frame_list,frame_list[last_page_id],page,result);
                     for(let page_id in frame_list)
                     {
                         if(frame_list[page_id]===frame_list[last_page_id])
@@ -149,11 +139,11 @@ class DemandPaging{
                         }
                     }
                 }
-                page_faults+=1;
+                result.fault_count+=1;
             }
             else
             {
-                this.printReplacement(frame_list,frame_list[last_page_id],page,false);
+                this.updateReplacement(frame_list,frame_list[last_page_id],page,result,false);
                 //updating the next id of the page 
                 let next_page_id=page_list.indexOf(page,curr_idx+1);
                 if(next_page_id==-1) 
@@ -162,20 +152,39 @@ class DemandPaging{
             }
             curr_idx+=1;
         }
-        return page_faults;
+        return result;
+    }
+    showResult(result){
+        for(let info of result.page_faults)
+        {
+            let info_str=info.new_page+" | ";
+            for(let page of info.frame_list)
+            {
+                if(info.to_replace&&page===info.replacement_page)
+                    info_str+="->"+page+" ";
+                else
+                    info_str+=page+" ";
+            }
+            info_str+="|";
+            console.log(info_str);
+        }
+        let length=result.page_faults.length;
+        console.log("FAULT COUNT:"+result.fault_count);
+        console.log("MISS RATIO:"+result.fault_count*1.0/length);
+        console.log("HIT RATIO:"+(1-(result.fault_count*1.0/length)));
     }
     showAllPagingAlgo(page_list,frame_size)
     {
-        let page_faults;
+        let result;
         console.log("<--FIRST COME FIRST SERVER-->");
-        page_faults=this.firstComeFirstOutReplacement(page_list,frame_size);
-        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  HIT RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        result=this.firstComeFirstOutReplacement(page_list,frame_size);
+        this.showResult(result);
         console.log("<--LEAST RECENTLY USED-->");
-        page_faults=this.leastRecentlyUsedReplacement(page_list,frame_size);
-        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  HIT RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        result=this.leastRecentlyUsedReplacement(page_list,frame_size);
+        this.showResult(result);
         console.log("<--OPTIMAL REPLACEMENT-->");
-        page_faults=this.optimalReplacement(page_list,frame_size);
-        console.log("PAGE FAULTS:"+page_faults+" MISS RATIO:"+(page_faults*1.0/page_list.length)+"  HIT RATIO:"+(1-(page_faults*1.0/page_list.length)));
+        result=this.optimalReplacement(page_list,frame_size);
+        this.showResult(result);
     }
 }
 
