@@ -1,4 +1,4 @@
-class DiskScheduling {
+export default class DiskScheduling {
   constructor() {}
   firstComeFirstServe(request, head) {
     let result = {
@@ -54,9 +54,12 @@ class DiskScheduling {
       result.history.left.push(request[i]);
       head = request[i];
     }
-    result.movement.left += head;
-    result.history.left.push(0);
-    head = 0;
+    if(head!=0)
+    {
+      result.movement.left += head;
+      result.history.left.push(0);
+      head = 0;
+    }
     for (let i = m; i < request.length; ++i) {
       result.movement.left += Math.abs(head - request[i]);
       result.history.left.push(request[i]);
@@ -68,9 +71,12 @@ class DiskScheduling {
       result.history.right.push(request[i]);
       head = request[i];
     }
-    result.movement.right += end - head;
-    result.history.right.push(end);
-    head = end;
+    if(head!=end)
+    {
+      result.movement.right += end - head;
+      result.history.right.push(end);
+      head = end;
+    }
     for (let i = m - 1; i >= 0; --i) {
       result.movement.right += Math.abs(head - request[i]);
       result.history.right.push(request[i]);
@@ -102,12 +108,16 @@ class DiskScheduling {
       result.history.left.push(request[i]);
       head = request[i];
     }
-    result.movement.left += head;
-    result.history.left.push(0);
-    head = 0;
-    result.movement.left += end;
-    result.history.left.push(end);
-    head = end;
+    if(head!=0){
+      result.movement.left += head;
+      result.history.left.push(0);
+      head = 0;
+    }
+    if(request[request.length-1]!=end){
+      result.movement.left += end;
+      result.history.left.push(end);
+      head = end;
+    }
     for (let i = request.length - 1; i >= m; --i) {
       result.movement.left += Math.abs(head - request[i]);
       result.history.left.push(request[i]);
@@ -119,12 +129,17 @@ class DiskScheduling {
       result.history.right.push(request[i]);
       head = request[i];
     }
-    result.movement.right += end - head;
-    result.history.right.push(end);
-    head = end;
-    result.movement.right += end;
-    result.history.right.push(0);
-    head = 0;
+    if(request[request.length-1]!=end){
+      result.movement.right += end - head;
+      result.history.right.push(end);
+      head = end;
+    }
+    if(request[0]!=0)
+    {
+      result.movement.right += end;
+      result.history.right.push(0);
+      head = 0;
+    }
     for (let i = 0; i < m; ++i) {
       result.movement.right += Math.abs(head - request[i]);
       result.history.right.push(request[i]);
@@ -226,8 +241,8 @@ class DiskScheduling {
   }
 }
 
-let disk = new DiskScheduling();
-let request = [40, 124, 22, 86, 132, 60, 185, 17];
-let head = 50,
-  end = 200;
-disk.ShowAllDiskAlgo(request, head, end-1);
+// let disk = new DiskScheduling();
+// let request = [40, 124, 22, 86, 132, 60, 185, 17];
+// let head = 50,
+//   end = 200;
+// disk.ShowAllDiskAlgo(request, head, end-1);

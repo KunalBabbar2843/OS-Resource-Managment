@@ -1,5 +1,4 @@
-class DemandPaging{
-    constructor(){}
+export default class DemandPaging{
     updateReplacement(frame_list,replacement_page,new_page,result,to_replace=true)
     {
         result.page_faults.push({
@@ -23,7 +22,7 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
-                    this.updateReplacement(frame_list,frame_list[first_come_page],page,result,false);
+                    this.updateReplacement(frame_list,"no replacement",page,result,true);
                     frame_list.push(page);
                 }
                 else
@@ -41,7 +40,7 @@ class DemandPaging{
                 result.fault_count+=1;
             }
             else{
-                this.updateReplacement(frame_list,first_come_page,page,result,false);
+                this.updateReplacement(frame_list,"no replacement",page,result,false);
             }
         }
         return result;
@@ -61,7 +60,7 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
-                    this.updateReplacement(frame_list,frame_list[0],page,result,false);
+                    this.updateReplacement(frame_list,"no replacement",page,result,true);
                     frame_list.push(page);
                     lru_counter.push(count++);
                 }
@@ -89,7 +88,7 @@ class DemandPaging{
                         lru_counter[page_id]=count++;
                     }
                 }
-                this.updateReplacement(frame_list,"not calculated",page,result,false);
+                this.updateReplacement(frame_list,"no replacement",page,result,false);
             }
         }
         return result;
@@ -101,7 +100,6 @@ class DemandPaging{
             fault_count:0
         };
         let frame_list=[];
-        let last_page_id=-1;
         let next_page_id_list=[];
         let curr_idx=0;
         for(let page of page_list)
@@ -111,30 +109,34 @@ class DemandPaging{
             {
                 if(frame_list.length<frame_size)
                 {
-                    this.updateReplacement(frame_list,frame_list[last_page_id],page,result,false);
+                    this.updateReplacement(frame_list,"no replacment",page,result,true);
                     frame_list.push(page);
                     let next_page_id=page_list.indexOf(page,curr_idx+1);
-                    if(next_page_id==-1) next_page_id=page_list.length+1;
-                    next_page_id_list.push(next_page_id);
-                    if(next_page_id>last_page_id) last_page_id=curr_idx;
+                    if(next_page_id===-1) next_page_id=page_list.length+1;
+                    next_page_id_list.push({page,next_page_id});
                 }
                 else{
                     //calulating the id of page which is to be used last 
+                    let replacement=next_page_id_list[0];
+                    let old_id=0;
                     for(let id in next_page_id_list)
                     {
-                        if(next_page_id_list[id]>next_page_id_list[last_page_id])
-                            last_page_id=id;
-                    }
-                    this.updateReplacement(frame_list,frame_list[last_page_id],page,result);
-                    for(let page_id in frame_list)
-                    {
-                        if(frame_list[page_id]===frame_list[last_page_id])
+                        if(next_page_id_list[id].next_page_id>replacement.next_page_id)
                         {
-                            frame_list[page_id]=page;
+                            replacement=next_page_id_list[id];
+                            old_id=id;
+                        }
+                        
+                    }
+                    this.updateReplacement(frame_list,replacement.page,page,result);
+                    for(let frame_id in frame_list)
+                    {
+                        if(frame_list[frame_id]===replacement.page){
+                            frame_list[frame_id]=page;
                             let next_page_id=page_list.indexOf(page,curr_idx+1);
-                            if(next_page_id==-1) 
-                                next_page_id=page_list.length+1;
-                            next_page_id_list[page_id]=next_page_id;
+                            if(next_page_id===-1) next_page_id=page_list.length+1;
+                            next_page_id_list[old_id].page=page;
+                            next_page_id_list[old_id].next_page_id=next_page_id;
                             break;
                         }
                     }
@@ -143,12 +145,18 @@ class DemandPaging{
             }
             else
             {
-                this.updateReplacement(frame_list,frame_list[last_page_id],page,result,false);
+                this.updateReplacement(frame_list,"no replacement",page,result,false);
                 //updating the next id of the page 
                 let next_page_id=page_list.indexOf(page,curr_idx+1);
-                if(next_page_id==-1) 
+                if(next_page_id===-1) 
                     next_page_id=page_list.length+1;
-                next_page_id_list[page_id]=next_page_id;
+                for(let present_page of next_page_id_list){
+                    if(frame_list[page_id]===present_page.page)
+                    {
+                        present_page.next_page_id=next_page_id;
+                        break;
+                    }
+                }
             }
             curr_idx+=1;
         }
@@ -188,10 +196,10 @@ class DemandPaging{
     }
 }
 
-let demand_paging=new DemandPaging();
+// let demand_paging=new DemandPaging();
 
-let page_list=[1,2,3,4,1,2,5,1,2,3,4,5];
+// let page_list=[1,2,3,3,2,1,5,4,1,3,2];
 
-let frame_size=4;
+// let frame_size=4;
 
-demand_paging.showAllPagingAlgo(page_list,frame_size);
+// demand_paging.showAllPagingAlgo(page_list,frame_size);

@@ -4,17 +4,18 @@
 //waiting time->totol duration of time in which process remain in queue{turn around time - burst time}
 //turn around time->total duration in which process remain in queue and excution{completion time - arrival time}  
 //response time->duration of time in which a process get scheduled for first time{point of time at which a process get cpu first time - arrival time}
-function processInfo(id,arrival,burst){
+function processInfo(id,arrival,burst,priority){
     this.id=id;
     this.arrival=arrival;
     this.burst=burst;
+    this.priority=priority;
     this.remaining=burst;
     this.finish=null;
-    this.turnaround=null;``
+    this.turnaround=null;
     this.wait=null;
     this.response=null;
 }
-class CpuScheduling{
+export default class CpuScheduling{
     constructor()
     {
 
@@ -24,10 +25,8 @@ class CpuScheduling{
         let process_list=[],id=1;
         for(let process of process_ary)
         {
-            let new_process=new processInfo(id,process[0],process[1]);
+            let new_process=new processInfo(id,process[0],process[1],process[2]);
             process_list.push(new_process);
-            if(process[2])
-                new_process.priority=process[2];
             id+=1;
         }
         process_list.sort(sort_by);
@@ -39,7 +38,7 @@ class CpuScheduling{
             old_time,new_time,process_id
         });
     }
-    adjustTimingAndResponse(process,time_elapsed){
+    adjustTimingAndResponse(process,time_elapsed,result){
         if(time_elapsed<process.arrival)
         {
             this.updateGanttChart(time_elapsed,process.arrival,"cpu idle",result);
@@ -78,7 +77,7 @@ class CpuScheduling{
         });
         let time_elapsed=0;
         for(let process of process_list){
-            time_elapsed=this.adjustTimingAndResponse(process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(process,time_elapsed,result);
             let old_time=time_elapsed;
             time_elapsed+=process.remaining;
             let new_time=time_elapsed;
@@ -107,7 +106,7 @@ class CpuScheduling{
         let time_elapsed=0;
         let shortest_job=process_list[0];
         while(shortest_job){
-            time_elapsed=this.adjustTimingAndResponse(shortest_job,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(shortest_job,time_elapsed,result);
             let old_time=time_elapsed;
             time_elapsed+=shortest_job.remaining;
             let new_time=time_elapsed;
@@ -148,7 +147,7 @@ class CpuScheduling{
         let shortest_job=process_list[0];
         shortest_job.response=0;
         while(shortest_job){
-            time_elapsed=this.adjustTimingAndResponse(shortest_job,time_elapsed);          
+            time_elapsed=this.adjustTimingAndResponse(shortest_job,time_elapsed,result);          
             let next_arrived=null;
             for(let process of process_list)
             {
@@ -217,7 +216,7 @@ class CpuScheduling{
         while(ready_queue.length)
         {
             top_process=ready_queue.shift();
-            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed,result);
             let run_time=top_process.remaining>time_quantum?time_quantum:top_process.remaining;
             let next_arrived=null;
             for(let process of process_list)
@@ -267,7 +266,7 @@ class CpuScheduling{
         let top_process=process_list[0];
         while(top_process)
         {
-            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed,result);
             let next_arrived=null;
             for(let process of process_list)
             {
@@ -313,7 +312,7 @@ class CpuScheduling{
         let top_process=process_list[0];
         while(top_process)
         {
-            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed);
+            time_elapsed=this.adjustTimingAndResponse(top_process,time_elapsed,result);
             let next_arrived=null;
             for(let process of process_list)
             {
@@ -372,28 +371,28 @@ class CpuScheduling{
     {
         let result;
         console.log("<--FIRST COME FIRST SERVE SCHEDULING-->");
-        result=cpu.firstComeFirstServe(process_ary);
+        result=this.firstComeFirstServe(process_ary);
         this.showResult(result);
         console.log("<--SHORTEST JOB FIRST SCHEDULING-->");
-        result=cpu.shortestJobFirst(process_ary);
+        result=this.shortestJobFirst(process_ary);
         this.showResult(result);
         console.log("<--SHORTEST REMAINING TIME FIRST SCHEDULING-->");
-        result=cpu.shortestRemainingTimeFirst(process_ary);
+        result=this.shortestRemainingTimeFirst(process_ary);
         this.showResult(result);
         console.log("<--ROUND ROBIN SCHEDULING-->");
-        result=cpu.roundRobin(process_ary,time_quantum);
+        result=this.roundRobin(process_ary,time_quantum);
         this.showResult(result);
         console.log("<--PRIORITY NON PREEMPTIVE SCHEDULING-->");
-        result=cpu.priorityNonPreemptive(process_ary,priority_cmp);
+        result=this.priorityNonPreemptive(process_ary,priority_cmp);
         this.showResult(result);
         console.log("<--PRIORITY PREEMPTIVE SCHEDULING-->");
-        result=cpu.priorityPreemptive(process_ary,priority_cmp);
+        result=this.priorityPreemptive(process_ary,priority_cmp);
         this.showResult(result);
     }
 }
-let process_ary=[[0,5,10],[1,4,20],[2,2,30],[4,1,40]];
-let cpu=new CpuScheduling();
-let time_quantum=2;
-let priority_greater=(a,b)=>a.priority>b.priority?1:a.priority==b.priority?0:-1;
-let priority_lesser=(a,b)=>a.priority>b.priority?-1:a.priority==b.priority?0:1;
-cpu.showAllSchedulingAlgorithm(process_ary,time_quantum,priority_greater);
+// let process_ary=[[0,5,10],[1,4,20],[2,2,30],[4,1,40]];
+// let cpu=new CpuScheduling();
+// let time_quantum=2;
+// let priority_greater=(a,b)=>a.priority>b.priority?1:a.priority==b.priority?0:-1;
+// let priority_lesser=(a,b)=>a.priority>b.priority?-1:a.priority==b.priority?0:1;
+// cpu.showAllSchedulingAlgorithm(process_ary,time_quantum,priority_greater);

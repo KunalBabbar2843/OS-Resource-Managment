@@ -1,0 +1,16 @@
+.head{
+    text-align: center;
+    margin: 0.5rem 0rem;
+}
+.input-work{
+    display: block;
+    width: 500px;
+    margin: 0.5rem auto;
+}
+.submit-btn{
+    display: block;
+    margin: 0 auto;
+}
+.error{
+    color: red;
+}
