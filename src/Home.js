@@ -5,25 +5,35 @@ import useScrollIntoView from "./useScrollIntoView";
 function Home(props) {
   useScrollIntoView();
   return (
-    <div className="container-fluid px-4" style={{ minHeight: 80 + "vh" }}>
-      <div className="row">
-        <h1 className="text-center mt-2 px-4 display-6">
-          Operating System Resource Managment
-        </h1>
-        <p className="py-2 px-4 mb-0" style={{ textAlign: "justify" }}>
-          OS resource manager is a visualizing tool made for visualizing various
-          alogrithms used is operating system to manage the resources like
-          centeral processing unit,main memory and secondary storage.An
-          operating system acts similarly like manager means an operating system
-          performs no useful function by itself; though it provides an
-          environment within which other programs can do useful work.
-        </p>
-        <p className="py-2 px-4 mb-0">
-          The operating system can be viewed as a resource allocator.A computer
-          system consists of many resources that must be managed efficiently.
-          The operating system acts as the manager of the resources, decides
-          between conflicting requests, controls the execution of programs, etc.
-        </p>
+    <div className="container-fluid px-2" style={{ minHeight: 80 + "vh" }}>
+      <h1 className="text-center mt-2 px-4 display-6">
+        Operating System Resource Managment
+      </h1>
+      <div className="row flex-md-row flex-column mb-4">
+        <div className="col-md-9 col-12 order-2">
+          <p className="py-2 px-4 mb-0" style={{ textAlign: "justify" }}>
+            OS resource manager is a visualizing tool made for visualizing
+            various alogrithms used is operating system to manage the resources
+            like centeral processing unit,main memory and secondary storage.An
+            operating system acts similarly like manager means an operating
+            system performs no useful function by itself; though it provides an
+            environment within which other programs can do useful work.
+          </p>
+          <p className="py-2 px-4 mb-0">
+            The operating system can be viewed as a resource allocator.A
+            computer system consists of many resources that must be managed
+            efficiently. The operating system acts as the manager of the
+            resources, decides between conflicting requests, controls the
+            execution of programs, etc.
+          </p>
+        </div>
+        <div className="col-md-3 col-5 mx-auto order-1">
+          <img
+            src="https://img-premium.flaticon.com/png/512/4514/premium/4514981.png?token=exp=1627741262~hmac=2da21a928d5a7447f903f04500c151cd"
+            alt="OS"
+            className="d-block w-100 h-100"
+          />
+        </div>
       </div>
       <div className="row">
         <h1 className="text-center display-6 mb-2">Resources</h1>

@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle";
-import "./index.css";
 import Header from "./Header";
 import Home from "./Home";
 import About from "./About";
